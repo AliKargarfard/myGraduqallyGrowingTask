@@ -1,0 +1,9 @@
+django==4.2
+black
+flake8
+python-decouple
+pillow
+djangorestframework
+markdown       
+django-filter  
+django-coreapi
