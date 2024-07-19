@@ -19,25 +19,25 @@ class ListTask(LoginRequiredMixin, ListView):
 class CreateTask(LoginRequiredMixin, CreateView):
     model = Task
     fields = ["task_name"]
-    success_url = reverse_lazy("list_tasks")
+    success_url = reverse_lazy("todo:list_tasks")
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        print(self.request.user,'-',form.instance.user,'-', self.context_object_name)
+        # print(self.request.user,'-',form.instance.user,'-', self.context_object_name)
         return super(CreateTask, self).form_valid(form)
 
 
 class UpdateTask(LoginRequiredMixin, UpdateView):
     model = Task
-    success_url = reverse_lazy("list_tasks")
+    success_url = reverse_lazy("todo:list_tasks")
     form_class = TaskUpdateForm
     template_name = "todo/update_task.html"
 
 
 ''' Mark a task as a Completed task '''    
-class CompleteTask(LoginRequiredMixin, View):
+class CompletedTask(LoginRequiredMixin, View):
     model = Task
-    success_url = reverse_lazy("list_tasks")
+    success_url = reverse_lazy("todo:list_tasks")
 
     def get(self, request, *args, **kwargs):
         object = Task.objects.get(id=kwargs.get("pk"))
@@ -47,9 +47,9 @@ class CompleteTask(LoginRequiredMixin, View):
 
 
 ''' Undo the completed task '''
-class UnCompleteTask(LoginRequiredMixin, View):
+class UnCompletedTask(LoginRequiredMixin, View):
     model = Task
-    success_url = reverse_lazy("list_tasks")
+    success_url = reverse_lazy("todo:list_tasks")
 
     def get(self, request, *args, **kwargs):
         object = Task.objects.get(id=kwargs.get("pk"))
@@ -61,7 +61,7 @@ class UnCompleteTask(LoginRequiredMixin, View):
 class DeleteTaskView(LoginRequiredMixin, DeleteView):
     model = Task
     context_object_name = "task_name"
-    success_url = reverse_lazy("list_tasks")
+    success_url = reverse_lazy("todo:list_tasks")
 
     def get(self, request, *args, **kwargs):
         return self.post(request, *args, **kwargs)
