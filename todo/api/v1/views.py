@@ -62,7 +62,7 @@ def taskList(request):
         serializer.save()
         return Response(serializer.data)
 
-@api_view(["GET","PUT"])
+@api_view(["GET","PUT","DELETE"])
 def taskDetail(request, id):
     # try:
     #     task = Task.objects.get(pk=id)
@@ -81,3 +81,7 @@ def taskDetail(request, id):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+    elif request.method == "DELETE":
+        task.delete()
+        return Response({"detail": "Task deleted successfully"}, status=HTTP_204_NO_CONTENT)
+
