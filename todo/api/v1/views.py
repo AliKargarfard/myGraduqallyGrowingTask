@@ -82,6 +82,7 @@ def taskDetail(request, id):
         serializer.save()
         return Response(serializer.data)
     elif request.method == "DELETE":
+        print (task.task_name)
         task.delete()
         return Response({"detail": "Task deleted successfully"}, status=HTTP_204_NO_CONTENT)
 
