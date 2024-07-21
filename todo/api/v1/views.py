@@ -39,8 +39,9 @@ class TaskModelViewSet(viewsets.ModelViewSet):
 
 """
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
 from .serializers import TaskSerializer
 from ...models import Task
 from rest_framework import status
@@ -48,6 +49,7 @@ from django.shortcuts import get_object_or_404
 
 
 @api_view(["GET","POST"])
+@permission_classes([IsAdminUser])
 def taskList(request):
     if request.method == "GET":
         tasks = Task.objects.all()
@@ -63,6 +65,7 @@ def taskList(request):
         return Response(serializer.data)
 
 @api_view(["GET","PUT","DELETE"])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def taskDetail(request, id):
     # try:
     #     task = Task.objects.get(pk=id)
@@ -84,5 +87,5 @@ def taskDetail(request, id):
     elif request.method == "DELETE":
         # print (task.task_name)
         task.delete()
-        return Response({"detail": "Task deleted successfully"}, status=HTTP_204_NO_CONTENT)
+        return Response({"detail": "Task deleted successfully"}, atatus=status.HTTP_204_NO_CONTENT)
 
