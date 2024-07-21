@@ -40,14 +40,18 @@ class TaskModelViewSet(viewsets.ModelViewSet):
 """
 
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
 from .serializers import TaskSerializer
 from ...models import Task
 from rest_framework import status
+from rest_framework.generics import GenericAPIView, ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework import mixins
 from django.shortcuts import get_object_or_404
 
 
+"""
 @api_view(["GET","POST"])
 @permission_classes([IsAdminUser])
 def taskList(request):
@@ -63,6 +67,7 @@ def taskList(request):
 
         serializer.save()
         return Response(serializer.data)
+
 
 @api_view(["GET","PUT","DELETE"])
 @permission_classes([IsAuthenticatedOrReadOnly])
@@ -87,5 +92,57 @@ def taskDetail(request, id):
     elif request.method == "DELETE":
         # print (task.task_name)
         task.delete()
-        return Response({"detail": "Task deleted successfully"}, atatus=status.HTTP_204_NO_CONTENT)
+        return Response({"detail": "Task deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+"""
 
+
+
+"""class TaskList(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    # add input html form fields to the list of post 
+    serializer_class = TaskSerializer
+    def get(self, request):
+        tasks = Task.objects.all()
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = TaskSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+class TaskDetail(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = TaskSerializer
+
+    def get(self, request, id):    
+        task = get_object_or_404(Task, pk=id)
+        serializer = self.serializer_class(task)
+        return Response(serializer.data)
+
+    def put(self, request, id):
+        task = get_object_or_404(Task, pk=id)
+        serializer = self.serializer_class(task,data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, id):
+        task = get_object_or_404(Task, pk=id)
+        task.delete()
+        return Response({"detail": "Task deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+"""
+
+
+class TaskList(ListCreateAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = TaskSerializer    
+    queryset = Task.objects.all()
+
+class TaskDetail(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = TaskSerializer    
+    queryset = Task.objects.all()
