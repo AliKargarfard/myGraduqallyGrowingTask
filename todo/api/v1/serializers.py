@@ -1,4 +1,5 @@
-"""from rest_framework import serializers
+"""
+from rest_framework import serializers
 from ...models import Task
 # from accounts.models import Profile
 
@@ -68,13 +69,36 @@ class TaskSerializer(serializers.ModelSerializer):
 
 from rest_framework import serializers
 from ...models import Task
+from django.http import HttpRequest
 
 # class TaskSerializer(serializers.Serializer):
 #     id = serializers.IntegerField()
 #     task_name = serializers.CharField(max_length=200)
 
 class TaskSerializer(serializers.ModelSerializer):
+    relative_url = serializers.URLField(source='get_absolute_api_url',read_only=True)
+    absolute_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Task
         # fields = '__all__'
-        fields = ['id','task_name','completed','created_at','user']
+        fields = ['id','task_name','completed','relative_url','absolute_url','created_at','user']
+
+    def get_absolute_url(self,obj):
+        request = self.context.get('request')
+        return request.build_absolute_uri(obj.pk)
+    
+    def to_representation(self, instance):
+        req = self.context.get('request')
+        represent = super().to_representation(instance)
+
+        # برای تشخیص اینکه درخواست درحالت تکی است و یا لیست است
+        if req.parser_context.get('kwargs').get('pk'):    # درخواست بصورت تک آیتم
+            # حذف برخی از فیلدهای غیر ضروری در بخش نمایش اطلاعات
+            # represent.pop('snippet',None)
+            represent.pop('relative_url',None)
+            represent.pop('absolute_url',None)
+        else:   #  درخواست بصورت لیست
+            represent.pop('content',None)
+        # represent['category'] = CategorySerializer(instance.category).data
+        return represent

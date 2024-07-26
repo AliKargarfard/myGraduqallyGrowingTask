@@ -27,6 +27,6 @@ urlpatterns = [
     # path('task/<int:id>/', taskDetail, name='task_detail'),
     # path('task/', TaskList.as_view(), name='task_list'),
     # path('task/<int:pk>/', TaskDetail.as_view(), name='task_detail'),
-    path('task/', TaskViewSet.as_view({'get':'list','post':'create'}), name='task_list'),
-    path('task/<int:pk>/', TaskViewSet.as_view({'get':'retrieve','put':'update','patch':'partial_update','delete':'destroy'}), name='task_detail'),
+    path('task/', TaskModelViewSet.as_view({'get':'list','post':'create'}), name='task_list'),
+    path('task/<int:pk>/', TaskModelViewSet.as_view({'get':'retrieve','put':'update','patch':'partial_update','delete':'destroy'}), name='task_detail'),
 ]
