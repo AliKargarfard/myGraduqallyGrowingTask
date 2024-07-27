@@ -39,16 +39,9 @@ class TaskModelViewSet(viewsets.ModelViewSet):
 
 """
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
-from .serializers import TaskSerializer
-from ...models import Task
-from rest_framework import status
-from rest_framework.generics import GenericAPIView, ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework import mixins
-from django.shortcuts import get_object_or_404
+
+# ........................................................
+
 
 
 """
@@ -135,8 +128,25 @@ class TaskDetail(APIView):
         task.delete()
         return Response({"detail": "Task deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 """
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
+from .serializers import TaskSerializer
+from ...models import Task
+from rest_framework import status, mixins, viewsets
+from rest_framework.generics import GenericAPIView, ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework import mixins
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets
+# افزودن ماژول فیلترینگ داده ها
+from django_filters.rest_framework import DjangoFilterBackend
+# ماژول سرچ و جستجو در فیلترها 
+from rest_framework.filters import SearchFilter, OrderingFilter
+from .paginations import CustomPagination
+from .permissions import IsCreatorOrReadOnly
 
-
+# using APIViews .............................
 class TaskList(ListCreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = TaskSerializer    
@@ -146,3 +156,64 @@ class TaskDetail(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = TaskSerializer    
     queryset = Task.objects.all()
+
+# Using ViewSets ..............................
+class TaskViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = TaskSerializer    
+    queryset = Task.objects.all()
+
+    def list(self, request):
+        serializer = self.serializer_class(self.queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        task_obj = get_object_or_404(self.queryset, pk=pk)
+        serializer = self.serializer_class(task_obj)
+        return Response(serializer.data)
+
+    def create(self, request):
+        serializer = TaskSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        task = get_object_or_404(Task, pk=id)
+        serializer = self.serializer_class(task,data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def partial_update(self, request, pk=None):
+        pass
+
+    def destroy(self, request, pk=None):
+        task = get_object_or_404(Task, pk=id)
+        task.delete()
+        return Response({"detail": "Task deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+
+# using ModelViewSets ...................................
+class TaskModelViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly,IsCreatorOrReadOnly]
+    serializer_class = TaskSerializer    
+    queryset = Task.objects.all()
+
+    ''' in ModelViewSets methodes for operations is generated automatically '''
+
+
+    # (ordering)ایجاد امکان فیلترینگ رکوردها و جستجو و مرتب سازی
+    filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]
+
+    # انتخاب فیلدهای مورد نظر برای فیلترینگ
+    filterset_fields = ['task_name', 'user', 'completed']
+
+    # انتخاب فیلدهای مورد نظر برای جستجو
+    search_fields = ['task_name']
+
+    # انتخاب فیلدهای مورد نظر برای مرتب سازی
+    ordering_fields = ['created_at']
+
+    # paginations.py ایجاد امکان صفحه بندی برگرفته از فایل 
+    pagination_class = CustomPagination    
